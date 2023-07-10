@@ -24,7 +24,7 @@ module EngineIO
     @ping_timeout : Int32 = 60000
     @max_payload : Int64 = 100000000
     @connected : Atomic(Int32) = Atomic(Int32).new(0)
-    @incoming : Channel(String) = Channel(String).new
+    @incoming : Channel(String) = Channel(String).new(100)
 
     def initialize(host : String, path : String = "/engine.io")
       @websocket = HTTP::WebSocket.new("wss://#{host}#{path}?EIO=4&transport=websocket")
