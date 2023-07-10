@@ -60,7 +60,7 @@ module EngineIO
     end
 
     private def send_packet(type : PacketType, data : String = "")
-      @websocket.send("#{type}#{data}")
+      @websocket.send("#{type.value}#{data}")
     end
   end
 end

@@ -31,7 +31,7 @@ module SocketIO
 
     def emit(event : PacketType, data : String)
       # Sent event packet
-      @engine_io.send("#{event}#{@namespace},#{data}")
+      @engine_io.send("#{event.value}#{@namespace},#{data}")
     end
 
     def connect
