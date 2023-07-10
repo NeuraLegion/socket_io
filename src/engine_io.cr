@@ -56,7 +56,7 @@ module EngineIO
     def run
       @websocket.on_message do |message|
         Log.debug { "Received message #{message}" }
-        case message[0].to_i
+        case PacketType.new(message[0].to_i)
         when PacketType::OPEN
           json = JSON.parse(message[1..-1])
           @ping_interval = json["pingInterval"].as_i
