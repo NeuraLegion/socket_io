@@ -73,7 +73,12 @@ module SocketIO
       @engine_io.on_message do |data|
         message = Packet.new(data)
         Log.debug { "Received #{message.type} packet with namespace #{message.namespace} and data #{message.data}" }
-        yield message
+        case message.type
+        when PacketType::EVENT
+          yield message.data
+        when PacketType::DISCONNECT
+          close
+        end
       end
     end
 
