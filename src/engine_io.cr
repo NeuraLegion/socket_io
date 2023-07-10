@@ -41,7 +41,7 @@ module EngineIO
     end
 
     def connect
-      spawn run
+      run
       @websocket.run
     end
 
