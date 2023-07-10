@@ -17,6 +17,7 @@ module EngineIO
     @ping_interval : Int32 = 25000
     @ping_timeout : Int32 = 60000
     @max_payload : Int64 = 100000000
+    @connected : Atomic(Int32) = Atomic(Int32).new(0)
 
     def initialize(host : String, path : String = "/engine.io")
       @websocket = HTTP::WebSocket.new("wss://#{host}#{path}?EIO=4&transport=websocket")
@@ -28,6 +29,10 @@ module EngineIO
 
     def connect
       @websocket.run
+    end
+
+    def connected? : Bool
+      @connected.get == 1
     end
 
     def close
@@ -43,6 +48,7 @@ module EngineIO
           @ping_interval = json["pingInterval"].as_i
           @ping_timeout = json["pingTimeout"].as_i
           @max_payload = json["maxPayload"].as_i64
+          @connected.set(1)
         when PacketType::CLOSE
           @websocket.close
         when PacketType::PING

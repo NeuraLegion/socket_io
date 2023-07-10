@@ -22,6 +22,11 @@ module SocketIO
       spawn do
         @engine_io.connect
       end
+      # Wait up to 30 seconds for engine to connect
+      30.times do
+        break if @engine_io.connected?
+        sleep 1
+      end
     end
 
     def send(data : String)
