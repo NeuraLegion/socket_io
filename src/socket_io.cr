@@ -85,10 +85,10 @@ module SocketIO
       def initialize(data : String)
         # Packet looks like this: PacketType/namespace,data
         # Data is a JSON object
-        parts = data.split(",", 2)
-        @type = PacketType.new(parts[0].to_i)
-        @namespace = parts[1].split("/", 2)[0]
-        @data = JSON.parse(parts[1].split(",", 2)[1])
+        @type = PacketType.new(data[0].to_i)
+
+        @namespace, payload = data[1..-1].split(",", 2)
+        @data = JSON.parse(payload)
       end
     end
   end
