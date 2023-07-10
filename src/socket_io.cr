@@ -58,11 +58,11 @@ module SocketIO
       disconnect
     end
 
-    def on_data(&block : JSON::Any ->)
+    def on_data
       @engine_io.on_message do |data|
         message = Packet.new(data)
         puts "Received #{message.type} packet with namespace #{message.namespace} and data #{message.data}"
-        block.call(message.data)
+        yield message
       end
     end
 

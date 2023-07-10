@@ -18,6 +18,7 @@ module EngineIO
     @ping_timeout : Int32 = 60000
     @max_payload : Int64 = 100000000
     @connected : Atomic(Int32) = Atomic(Int32).new(0)
+    @incoming : Channel(String) = Channel(String).new
 
     def initialize(host : String, path : String = "/engine.io")
       @websocket = HTTP::WebSocket.new("wss://#{host}#{path}?EIO=4&transport=websocket")
@@ -27,7 +28,14 @@ module EngineIO
       send_packet(PacketType::MESSAGE, message)
     end
 
+    def on_message
+      loop do
+        yield @incoming.receive
+      end
+    end
+
     def connect
+      spawn run
       @websocket.run
     end
 
@@ -39,7 +47,7 @@ module EngineIO
       send_packet(PacketType::CLOSE)
     end
 
-    def on_message(&block : String ->)
+    def run
       @websocket.on_message do |message|
         puts "MESSAGE: #{message}"
         case message[0].to_i
@@ -56,7 +64,7 @@ module EngineIO
         when PacketType::PONG
           # do nothing
         when PacketType::MESSAGE
-          block.call(message[1..-1])
+          @incoming.send(message[1..-1])
         when PacketType::UPGRADE
           # do nothing
         when PacketType::NOOP
