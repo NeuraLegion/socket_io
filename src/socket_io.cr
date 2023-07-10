@@ -86,7 +86,7 @@ module SocketIO
         # Packet looks like this: PacketType/namespace,data
         # Data is a JSON object
         parts = data.split(",", 2)
-        @type = PacketType.from_value(parts[0].to_i)
+        @type = PacketType.new(parts[0].to_i)
         @namespace = parts[1].split("/", 2)[0]
         @data = JSON.parse(parts[1].split(",", 2)[1])
       end
