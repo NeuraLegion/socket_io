@@ -3,6 +3,12 @@ require "./engine_io.cr"
 module SocketIO
   VERSION = "4"
 
+  Log = ::Log.for("SocketIO")
+  backend = ::Log::IOBackend.new(STDOUT)
+  ::Log.setup do |c|
+    c.bind("SocketIO.*", ::Log::Severity::Error, backend)
+  end
+
   enum PacketType
     CONNECT       = 0
     DISCONNECT    = 1
@@ -26,6 +32,11 @@ module SocketIO
       30.times do
         break if @engine_io.connected?
         sleep 1
+      end
+
+      unless @engine_io.connected?
+        Log.error { "Could not connect to engine.io server" }
+        raise "Could not connect to engine.io server"
       end
     end
 
@@ -61,7 +72,7 @@ module SocketIO
     def on_data
       @engine_io.on_message do |data|
         message = Packet.new(data)
-        puts "Received #{message.type} packet with namespace #{message.namespace} and data #{message.data}"
+        Log.debug { "Received #{message.type} packet with namespace #{message.namespace} and data #{message.data}" }
         yield message
       end
     end

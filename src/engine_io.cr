@@ -2,6 +2,12 @@ require "http/web_socket"
 require "json"
 
 module EngineIO
+  Log = ::Log.for("EngineIO")
+  backend = ::Log::IOBackend.new(STDOUT)
+  ::Log.setup do |c|
+    c.bind("EngineIO.*", ::Log::Severity::Error, backend)
+  end
+
   enum PacketType
     OPEN    = 0
     CLOSE   = 1
@@ -49,7 +55,7 @@ module EngineIO
 
     def run
       @websocket.on_message do |message|
-        puts "MESSAGE: #{message}"
+        Log.debug { "Received message #{message}" }
         case message[0].to_i
         when PacketType::OPEN
           json = JSON.parse(message[1..-1])
@@ -74,6 +80,7 @@ module EngineIO
     end
 
     private def send_packet(type : PacketType, data : String = "")
+      Log.debug { "Sending packet #{type.value}#{data}" }
       @websocket.send("#{type.value}#{data}")
     end
   end
