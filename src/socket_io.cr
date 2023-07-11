@@ -40,12 +40,12 @@ module SocketIO
       end
     end
 
-    def send(data : String, type : PacketType = PacketType::EVENT, id : Int32? = nil)
+    def send(data : String, type : PacketType = PacketType::EVENT, id : Int64? = nil)
       # Sent event packet
       emit(type, "[#{data}]", id)
     end
 
-    def emit(event : PacketType, data : String, id : Int32? = nil)
+    def emit(event : PacketType, data : String, id : Int64? = nil)
       # Sent event packet
       @engine_io.send("#{event.value}#{@namespace},#{id}#{data}")
     end
@@ -85,7 +85,7 @@ module SocketIO
     struct Packet
       getter type : PacketType
       getter namespace : String
-      getter id : Int32?
+      getter id : Int64?
       getter data : JSON::Any
 
       def initialize(data : String)
@@ -96,7 +96,7 @@ module SocketIO
         when PacketType::EVENT, PacketType::ACK
           id, raw = payload.split("[", 2)
           raw = "[" + raw
-          @id = id.to_i?
+          @id = id.to_i64?
           @data = JSON.parse(raw)
         else
           @data = JSON.parse(payload)
