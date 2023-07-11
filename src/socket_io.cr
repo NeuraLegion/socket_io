@@ -40,7 +40,7 @@ module SocketIO
       end
     end
 
-    def send_event(data : String, type : PacketType = PacketType::EVENT, id : Int32? = nil)
+    def send(data : String, type : PacketType = PacketType::EVENT, id : Int32? = nil)
       # Sent event packet
       emit(type, "[#{data}]", id)
     end
