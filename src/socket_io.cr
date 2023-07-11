@@ -89,22 +89,14 @@ module SocketIO
       getter data : JSON::Any
 
       def initialize(data : String)
-        # Packet looks like this: PacketType/namespace,data
-        # Data is a JSON object
         @type = PacketType.new(data[0].to_i)
 
         @namespace, payload = data[1..-1].split(",", 2)
-        case @type
-        when PacketType::ACK
-          id, raw = payload.split("[", 2)
-          raw = "[" + raw
-          @id = id.to_i?
-          @data = JSON.parse(raw)
-        when PacketType::EVENT, PacketType::CONNECT
-          @data = JSON.parse(payload)
-        else
-          raise "Unsupported packet type #{@type}"
-        end
+
+        id, raw = payload.split("[", 2)
+        raw = "[" + raw
+        @id = id.to_i?
+        @data = JSON.parse(raw)
       end
     end
   end
