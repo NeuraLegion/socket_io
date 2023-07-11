@@ -65,6 +65,7 @@ module EngineIO
           @connected.set(1)
         when PacketType::CLOSE
           @websocket.close
+          @connected.set(0)
         when PacketType::PING
           send_packet(PacketType::PONG)
         when PacketType::PONG
