@@ -100,7 +100,7 @@ module SocketIO
           raw = "[" + raw
           @id = id.to_i?
           @data = JSON.parse(raw)
-        when PacketType::EVENT
+        when PacketType::EVENT, PacketType::CONNECT
           @data = JSON.parse(payload)
         else
           raise "Unsupported packet type #{@type}"
