@@ -92,11 +92,15 @@ module SocketIO
         @type = PacketType.new(data[0].to_i)
 
         @namespace, payload = data[1..-1].split(",", 2)
-
-        id, raw = payload.split("[", 2)
-        raw = "[" + raw
-        @id = id.to_i?
-        @data = JSON.parse(raw)
+        case @type
+        when PacketType::EVENT, PacketType::ACK
+          id, raw = payload.split("[", 2)
+          raw = "[" + raw
+          @id = id.to_i?
+          @data = JSON.parse(raw)
+        else
+          @data = JSON.parse(payload)
+        end
       end
     end
   end
