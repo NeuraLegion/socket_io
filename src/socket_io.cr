@@ -40,14 +40,14 @@ module SocketIO
       end
     end
 
-    def send(data : String)
+    def send_event(data : String, type : PacketType = PacketType::EVENT, id : Int32? = nil)
       # Sent event packet
-      emit(PacketType::EVENT, "[#{data}]")
+      emit(type, "[#{data}]", id)
     end
 
-    def emit(event : PacketType, data : String)
+    def emit(event : PacketType, data : String, id : Int32? = nil)
       # Sent event packet
-      @engine_io.send("#{event.value}#{@namespace},#{data}")
+      @engine_io.send("#{event.value}#{@namespace},#{id}#{data}")
     end
 
     def connect
@@ -74,8 +74,8 @@ module SocketIO
         message = Packet.new(data)
         Log.debug { "Received #{message.type} packet with namespace #{message.namespace} and data #{message.data}" }
         case message.type
-        when PacketType::EVENT
-          yield message.data
+        when PacketType::EVENT, PacketType::ACK
+          yield message
         when PacketType::DISCONNECT
           close
         end
@@ -85,6 +85,7 @@ module SocketIO
     struct Packet
       getter type : PacketType
       getter namespace : String
+      getter id : Int32?
       getter data : JSON::Any
 
       def initialize(data : String)
@@ -93,7 +94,17 @@ module SocketIO
         @type = PacketType.new(data[0].to_i)
 
         @namespace, payload = data[1..-1].split(",", 2)
-        @data = JSON.parse(payload)
+        case @type
+        when PacketType::ACK
+          id, raw = payload.split("[", 2)
+          raw = "[" + raw
+          @id = id.to_i?
+          @data = JSON.parse(raw)
+        when PacketType::EVENT
+          @data = JSON.parse(payload)
+        else
+          raise "Unsupported packet type #{@type}"
+        end
       end
     end
   end
