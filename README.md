@@ -18,6 +18,19 @@ TODO: Write a description here
 
 ```crystal
 require "socket_io"
+socket = SocketIO::Client.new(host: hostname, path: "/socketio", namespace: "/")
+socket.connect
+
+socket.on_data do |packet|
+  # packet.type
+  # packet.namespace
+  # packet.id
+  # packet.data -> JSON data object
+end
+
+socket.send("data")
+socket.send("{}")
+socket.send(data: "data", id: 123, type: :ack)
 ```
 
 TODO: Write usage instructions here
