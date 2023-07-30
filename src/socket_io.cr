@@ -51,6 +51,12 @@ module SocketIO
     def emit(event : PacketType, data : String, id : Int64? = nil)
       # Sent event packet
       if @msgpack
+        case event
+        when PacketType::EVENT
+          event = PacketType::BINARY_EVENT
+        when PacketType::ACK
+          event = PacketType::BINARY_ACK
+        end
         msg = String.new({
           type: event.value,
           nsp:  @namespace,
@@ -98,7 +104,7 @@ module SocketIO
         message = Packet.new(data)
         Log.debug { "Received #{message.type} packet with namespace #{message.namespace} and data #{message.data}" }
         case message.type
-        when PacketType::EVENT, PacketType::ACK
+        when PacketType::EVENT, PacketType::ACK, PacketType::BINARY_EVENT, PacketType::BINARY_ACK
           yield message
         when PacketType::DISCONNECT
           close
