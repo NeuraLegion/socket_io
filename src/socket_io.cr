@@ -51,18 +51,14 @@ module SocketIO
     def emit(event : PacketType, data : String, id : Int64? = nil)
       # Sent event packet
       if @msgpack
-        case event
-        when PacketType::EVENT
-          event = PacketType::BINARY_EVENT
-        when PacketType::ACK
-          event = PacketType::BINARY_ACK
-        end
-        msg = String.new({
-          type: event.value,
-          nsp:  @namespace,
-          data: data,
-          id:   id,
-        }.to_msgpack)
+        msg = String.new(
+          {
+            type: event.value,
+            nsp:  @namespace,
+            data: data,
+            id:   id,
+          }.to_msgpack
+        )
       else
         msg = "#{event.value}#{@namespace},#{id}#{data}"
       end
@@ -91,6 +87,7 @@ module SocketIO
     def on_data
       @engine_io.on_message do |data|
         if @msgpack
+          Log.debug { "Received msgpack data #{data}" }
           temp = MSGPackParser.from_msgpack(data)
           message = Packet.new(
             type: PacketType.new(temp.type),
