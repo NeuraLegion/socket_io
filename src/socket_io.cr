@@ -1,3 +1,5 @@
+require "msgpack"
+
 require "./engine_io.cr"
 
 module SocketIO
@@ -22,8 +24,9 @@ module SocketIO
   class Client
     @engine_io : EngineIO::Client
     @namespace : String
+    @msgpack : Bool
 
-    def initialize(host : String, path : String = "/socket.io", @namespace : String = "")
+    def initialize(host : String, path : String = "/socket.io", @namespace : String = "", @msgpack : Bool = false)
       @engine_io = EngineIO::Client.new(host: host, path: path)
       spawn do
         @engine_io.connect
@@ -47,7 +50,17 @@ module SocketIO
 
     def emit(event : PacketType, data : String, id : Int64? = nil)
       # Sent event packet
-      @engine_io.send("#{event.value}#{@namespace},#{id}#{data}")
+      if @msgpack
+        msg = {
+          type: event.value,
+          nsp:  @namespace,
+          data: data,
+          id:   id,
+        }.to_msgpack
+      else
+        msg = "#{event.value}#{@namespace},#{id}#{data}"
+      end
+      @engine_io.send(msg)
     end
 
     def connect
@@ -71,6 +84,17 @@ module SocketIO
 
     def on_data
       @engine_io.on_message do |data|
+        if @msgpack
+          temp = MSGPackParser.from_msgpack(data)
+          message = Packet.new(
+            type: PacketType.new(temp.type),
+            namespace: temp.nsp,
+            data: JSON.parse(temp.data),
+            id: temp.id
+          )
+        else
+          message = Packet.new(data)
+        end
         message = Packet.new(data)
         Log.debug { "Received #{message.type} packet with namespace #{message.namespace} and data #{message.data}" }
         case message.type
@@ -82,11 +106,26 @@ module SocketIO
       end
     end
 
+    class MSGPackParser
+      include MessagePack::Serializable
+
+      property type : PacketType
+      property nsp : String
+      property data : String
+      property id : Int64?
+
+      def initialize(@type : PacketType, @nsp : String, @data : String, @id : Int64? = nil)
+      end
+    end
+
     struct Packet
       getter type : PacketType
       getter namespace : String
       getter id : Int64?
       getter data : JSON::Any
+
+      def initialize(@type : PacketType, @namespace : String, @data : JSON::Any, @id : Int64? = nil)
+      end
 
       def initialize(data : String)
         @type = PacketType.new(data[0].to_i)
