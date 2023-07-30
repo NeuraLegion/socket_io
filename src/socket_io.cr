@@ -43,24 +43,24 @@ module SocketIO
       end
     end
 
-    def send(data : String, type : PacketType = PacketType::EVENT, id : Int64? = nil)
+    def send(data, type : PacketType = PacketType::EVENT, id : Int64? = nil)
       # Sent event packet
-      emit(type, "[#{data}]", id)
+      emit(type, data, id)
     end
 
-    def emit(event : PacketType, data : String, id : Int64? = nil)
+    def emit(event : PacketType, data, id : Int64? = nil)
       # Sent event packet
       if @msgpack
         msg = String.new(
           {
             type: event.value,
             nsp:  @namespace,
-            data: JSON.parse(data).as_a,
+            data: [data],
             id:   id,
           }.to_msgpack
         )
       else
-        msg = "#{event.value}#{@namespace},#{id}#{data}"
+        msg = "#{event.value}#{@namespace},#{id}#{[data].to_json}"
       end
       @engine_io.send(msg)
     end
@@ -70,7 +70,7 @@ module SocketIO
       emit(PacketType::CONNECT, "")
     end
 
-    def connect(data : String)
+    def connect(data)
       # Sent connect packet
       emit(PacketType::CONNECT, data)
     end
