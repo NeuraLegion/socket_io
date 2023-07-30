@@ -51,12 +51,12 @@ module SocketIO
     def emit(event : PacketType, data : String, id : Int64? = nil)
       # Sent event packet
       if @msgpack
-        msg = {
+        msg = String.new({
           type: event.value,
           nsp:  @namespace,
           data: data,
           id:   id,
-        }.to_msgpack
+        }.to_msgpack)
       else
         msg = "#{event.value}#{@namespace},#{id}#{data}"
       end
