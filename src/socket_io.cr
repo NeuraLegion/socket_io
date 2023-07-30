@@ -55,7 +55,7 @@ module SocketIO
           {
             type: event.value,
             nsp:  @namespace,
-            data: data,
+            data: JSON.parse(data),
             id:   id,
           }.to_msgpack
         )
