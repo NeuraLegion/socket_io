@@ -34,6 +34,10 @@ module EngineIO
       send_packet(PacketType::MESSAGE, message)
     end
 
+    def send_binary(message : Bytes)
+      send_packet(PacketType::MESSAGE, message)
+    end
+
     def on_message
       loop do
         yield @incoming.receive
@@ -83,6 +87,12 @@ module EngineIO
     private def send_packet(type : PacketType, data : String = "")
       Log.debug { "Sending packet #{type.value}#{data}" }
       @websocket.send("#{type.value}#{data}")
+    end
+
+    private def send_packet(type : PacketType, data : Bytes = Bytes.new)
+      Log.debug { "Sending packet #{type.value}#{data}" }
+      msg = Slice(UInt8).join(Bytes.new("#{type.value}"), data)
+      @websocket.send(msg)
     end
   end
 end
