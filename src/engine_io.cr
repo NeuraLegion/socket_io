@@ -1,6 +1,5 @@
 require "http/web_socket"
 require "json"
-require "base64"
 
 module EngineIO
   Log = ::Log.for("EngineIO")
@@ -91,9 +90,8 @@ module EngineIO
     end
 
     private def send_packet(type : PacketType, data : Bytes = Bytes.new)
-      msg = "#{type.value}" + "b" + Base64.strict_encode(data)
-      Log.debug { "Sending packet #{msg}" }
-      @websocket.send(msg)
+      Log.debug { "Sending binary packet #{data}" }
+      @websocket.send(data)
     end
   end
 end
