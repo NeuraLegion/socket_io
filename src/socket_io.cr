@@ -52,7 +52,7 @@ module SocketIO
       # Sent event packet
       if @msgpack
         msg = {
-          type: event.value,
+          type: "#{event.value}",
           nsp:  @namespace,
           data: [data],
           id:   id,
