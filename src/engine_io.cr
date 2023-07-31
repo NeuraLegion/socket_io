@@ -34,7 +34,7 @@ module EngineIO
       send_packet(PacketType::MESSAGE, message)
     end
 
-    def send_binary(message : Bytes)
+    def send(message : Bytes)
       send_packet(PacketType::MESSAGE, message)
     end
 
