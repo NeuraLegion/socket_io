@@ -43,7 +43,7 @@ module SocketIO
       end
     end
 
-    def send(data, type : PacketType = PacketType::EVENT, id : Int64? = nil)
+    def send(data, type : PacketType = (@msgpack ? PacketType::BINARY_EVENT : PacketType::EVENT), id : Int64? = nil)
       # Sent event packet
       emit(type, data, id)
     end
