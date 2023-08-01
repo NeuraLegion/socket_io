@@ -54,7 +54,7 @@ module SocketIO
         msg = {
           type: event.value,
           nsp:  @namespace,
-          data: [data],
+          data: data,
           id:   id,
         }.to_msgpack
       else
