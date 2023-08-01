@@ -67,12 +67,7 @@ module SocketIO
       @engine_io.send(msg)
     end
 
-    def connect
-      # Sent connect packet
-      emit(PacketType::CONNECT, "")
-    end
-
-    def connect(data)
+    def connect(data = "")
       # Sent connect packet
       emit(PacketType::CONNECT, data)
     end
@@ -94,7 +89,6 @@ module SocketIO
         else
           message = Packet.new(data)
         end
-        message = Packet.new(data)
         Log.debug { "Received #{message.type} packet with namespace #{message.namespace} and data #{message.data}" }
         case message.type
         when PacketType::EVENT, PacketType::ACK, PacketType::BINARY_EVENT, PacketType::BINARY_ACK
