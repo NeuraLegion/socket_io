@@ -112,12 +112,13 @@ module SocketIO
       getter data : JSON::Any
 
       def self.from_msgpack(data : String)
-        raw = {type: Int32, nsp: String, data: String, id: Int64?}.from_msgpack(data)
+        raw = Hash(String, Int32 | String | Int64).from_msgpack(data)
+
         new(
-          type: PacketType.new(raw.type),
-          namespace: raw.nsp,
-          data: JSON.parse(raw.data),
-          id: raw.id
+          type: PacketType.new(raw["type"].as_i32),
+          namespace: raw["nsp"].as_s,
+          data: JSON.parse(raw["data"].as_s),
+          id: raw["id"].as_i64?,
         )
       end
 
