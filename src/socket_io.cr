@@ -118,7 +118,7 @@ module SocketIO
           type: PacketType.new(raw["type"].as(Int32)),
           namespace: raw["nsp"].to_s,
           data: JSON.parse(raw["data"].to_s),
-          id: raw["id"].as(Int64 | Nil)
+          id: raw["id"]?.as(Int64 | Nil)
         )
       end
 
