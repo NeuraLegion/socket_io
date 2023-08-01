@@ -111,7 +111,7 @@ module SocketIO
       getter id : Int64?
       getter data : JSON::Any
 
-      def self.from_msgpack(data : Bytes)
+      def self.from_msgpack(data : String)
         raw = {type : Int32, nsp : String, data : String, id : Int64?}.from_msgpack(data)
         new(
           type: PacketType.new(raw.type),
