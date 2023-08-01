@@ -45,6 +45,10 @@ module SocketIO
 
     def send(data, type : PacketType = PacketType::EVENT, id : Int64? = nil)
       # Sent event packet
+      case type
+      when PacketType::EVENT, PacketType::ACK, PacketType::BINARY_EVENT, PacketType::BINARY_ACK
+        data = [data] unless data.is_a?(Array)
+      end
       emit(type, data, id)
     end
 
@@ -54,11 +58,11 @@ module SocketIO
         msg = {
           type: event.value,
           nsp:  @namespace,
-          data: [data],
+          data: data,
           id:   id,
         }.to_msgpack
       else
-        msg = "#{event.value}#{@namespace},#{id}#{[data].to_json}"
+        msg = "#{event.value}#{@namespace},#{id}#{data.to_json}"
       end
       @engine_io.send(msg)
     end
@@ -86,13 +90,7 @@ module SocketIO
       @engine_io.on_message do |data|
         if @msgpack
           Log.debug { "Received msgpack data #{data}" }
-          temp = MSGPackParser.from_msgpack(data)
-          message = Packet.new(
-            type: PacketType.new(temp.type),
-            namespace: temp.nsp,
-            data: JSON.parse(temp.data),
-            id: temp.id
-          )
+          message = Packet.from_msgpack(data)
         else
           message = Packet.new(data)
         end
@@ -107,23 +105,21 @@ module SocketIO
       end
     end
 
-    class MSGPackParser
-      include MessagePack::Serializable
-
-      property type : PacketType
-      property nsp : String
-      property data : String
-      property id : Int64?
-
-      def initialize(@type : PacketType, @nsp : String, @data : String, @id : Int64? = nil)
-      end
-    end
-
     struct Packet
       getter type : PacketType
       getter namespace : String
       getter id : Int64?
       getter data : JSON::Any
+
+      def self.from_msgpack(data : Bytes)
+        raw = {type : Int32, nsp : String, data : String, id : Int64?}.from_msgpack(data)
+        new(
+          type: PacketType.new(raw.type),
+          namespace: raw.nsp,
+          data: JSON.parse(raw.data),
+          id: raw.id
+        )
+      end
 
       def initialize(@type : PacketType, @namespace : String, @data : JSON::Any, @id : Int64? = nil)
       end
