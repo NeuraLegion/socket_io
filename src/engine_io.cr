@@ -90,8 +90,9 @@ module EngineIO
     end
 
     private def send_packet(type : PacketType, data : Bytes)
-      Log.debug { "Sending binary packet #{data}" }
-      @websocket.send(data)
+      msg = Bytes.join([Bytes[type.value], data])
+      Log.debug { "Sending binary packet #{msg}" }
+      @websocket.send(msg)
     end
   end
 end
