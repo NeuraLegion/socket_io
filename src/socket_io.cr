@@ -115,10 +115,10 @@ module SocketIO
         raw = Hash(String, Int32 | String | Int64).from_msgpack(data)
 
         new(
-          type: PacketType.new(raw["type"].as_i32),
-          namespace: raw["nsp"].as_s,
-          data: JSON.parse(raw["data"].as_s),
-          id: raw["id"].as_i64?,
+          type: PacketType.new(raw["type"].to_i32),
+          namespace: raw["nsp"].to_s,
+          data: JSON.parse(raw["data"].to_s),
+          id: raw["id"].to_i64?,
         )
       end
 
