@@ -1,8 +1,9 @@
-require "./packet"
-require "./decoder"
+require "../packet"
+require "../decoder"
 require "msgpack"
+require "json"
 
-module SocketIO
+module SocketIO::Decoders
   class BaseDecoder < Decoder
     def encode(packet : Packet) : Bytes | String
       # TODO: handle binary attachments if we have them
@@ -31,26 +32,26 @@ module SocketIO
 
       # TODO: look up attachments if type binary
       nsp = if message[i + 1] == '/'
-        start = i + 1
-        unless i = message.index(/[,]/, start)
-          i = message.size
-        end
-        message[start..i - 1]
-      else
-        "/"
-      end
+              start = i + 1
+              unless i = message.index(/[,]/, start)
+                i = message.size
+              end
+              message[start..i - 1]
+            else
+              "/"
+            end
 
       next_char = message[i + 1]
-      id = if next_char && next_char.to_i64?
-        start = i + 1
-        unless i = message.index(/[^0-9]/, start)
-          i = message.size
-        end
-        message[start..i - 1].to_i64
-      else
-        i += 1
-        nil
-      end
+      id = if next_char && next_char.to_u64?
+             start = i + 1
+             unless i = message.index(/[^0-9]/, start)
+               i = message.size
+             end
+             message[start..i - 1].to_u64
+           else
+             i += 1
+             nil
+           end
 
       data = parse_payload(message[i..]) if message[i]
 

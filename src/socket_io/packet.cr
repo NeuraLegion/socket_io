@@ -12,10 +12,10 @@ module SocketIO
   struct Packet
     getter type : PacketType
     getter nsp : String?
-    getter id : Int64?
+    getter id : UInt64?
     getter data : JSON::Any?
 
-    def initialize(@type : PacketType, @nsp : String? = nil, @data : JSON::Any? = nil, @id : Int64? = nil)
+    def initialize(@type : PacketType, @nsp : String? = nil, @data : JSON::Any? = nil, @id : UInt64? = nil)
     end
   end
 end

@@ -3,13 +3,13 @@ require "json"
 
 module SocketIO
   class JsonParser < Parser
-    macro add_methods_to_cast_unint_and_int(*types)
-      {% for type in types %}
-        def parse(value : {{type.id}})
-          value.to_i64
-        end
-      {% end %}
-    end
+    private macro add_methods_to_cast_unint_and_int(*types)
+    {% for type in types %}
+      def parse(value : {{type.id}})
+        value.to_i64
+      end
+    {% end %}
+  end
 
     def parse(x : Tuple)
       parse(x.to_a)
