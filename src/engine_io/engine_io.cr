@@ -40,7 +40,8 @@ module EngineIO
         loop do
           select
           when packet = @incoming.receive?
-            block.call(packet) if packet
+            break unless packet
+            block.call(packet)
           end
         end
       end
