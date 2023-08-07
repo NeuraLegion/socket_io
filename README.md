@@ -16,24 +16,66 @@ TODO: Write a description here
 
 ## Usage
 
-```crystal
+To get started, require the `socket_io` library in your Crystal code:
+
+```cr
 require "socket_io"
-socket = SocketIO::Client.new(host: hostname, path: "/socketio", namespace: "/")
-socket.connect
-
-socket.on_data do |packet|
-  # packet.type
-  # packet.namespace
-  # packet.id
-  # packet.data -> JSON data object
-end
-
-socket.send("data")
-socket.send("{}")
-socket.send(data: "data", id: 123, type: :ack)
 ```
 
-TODO: Write usage instructions here
+Next, create a new Socket.IO client and connect it to the server:
+
+```cr
+socket = SocketIO::Client.new(host: "<your-hostname>")
+socket.connect
+```
+
+You can emit events to the server using the `emit` method:
+
+```cr
+socket.emit("hello", "world")
+```
+
+Additionally, you can emit events and expect an acknowledgement from the server:
+
+```cr
+data = socket.emit_with_ack("hello", "world")
+```
+
+To customize the acknowledgement timeout, you can add the timeout argument:
+
+```cr
+data = socket.emit_with_ack("hello", "world", timeout: 60.seconds)
+```
+
+To handle incoming events, use the `on` method as follows:
+
+```cr
+socket.on("news") do |event|
+  puts event.data
+end
+```
+
+To acknowledge an event, simply use the ack method as shown below:
+
+```cr
+socket.on("request") do |event|
+  event.ack("response")
+end
+```
+
+To remove event listeners, utilize one of the existing methods:
+
+```cr
+# Remove a specific listener
+socket.off("my-event", &my_listener)
+
+# Remove all event listeners for a specific event
+socket.off("my-event")
+
+# Remove all event listeners for all events
+socket.off_all()
+
+```
 
 ## Development
 
