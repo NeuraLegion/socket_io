@@ -35,9 +35,15 @@ module EngineIO
       send_packet(Packet.new(type: PacketType::MESSAGE, data: message))
     end
 
-    def on_message
-      loop do
-        yield @incoming.receive
+    def on_packet(&block : String | Bytes -> _)
+      spawn do
+        loop do
+          select
+          when packet = @incoming.receive?
+            break unless packet
+            block.call(packet)
+          end
+        end
       end
     end
 
@@ -51,10 +57,11 @@ module EngineIO
     end
 
     def close
+      @incoming.close
       send_packet(Packet.new(type: PacketType::CLOSE))
     end
 
-    def run
+    private def run
       @websocket.on_binary do |message|
         handle_packet(message)
       end
@@ -64,7 +71,7 @@ module EngineIO
       end
     end
 
-    def handle_packet(message : String | Bytes)
+    private def handle_packet(message : String | Bytes)
       packet = @decoder.decode(message)
       Log.debug { "Received message #{packet}" }
       case packet.type
@@ -83,15 +90,12 @@ module EngineIO
 
     private def handle_open_packet(packet : Packet)
       packet_data = packet.data
-      unless packet_data.is_a?(String)
-        Log.debug { "Parse error. Invalid payload: #{packet_data}" }
-      else
-        json = JSON.parse(packet_data)
-        @ping_interval = json["pingInterval"].as_i
-        @ping_timeout = json["pingTimeout"].as_i
-        @max_payload = json["maxPayload"].as_i64
-        @connected.set(1)
-      end
+      raise "Invalid payload" unless packet_data.is_a?(String)
+      json = JSON.parse(packet_data)
+      @ping_interval = json["pingInterval"].as_i
+      @ping_timeout = json["pingTimeout"].as_i
+      @max_payload = json["maxPayload"].as_i64
+      @connected.set(1)
     end
 
     private def handle_close_packet(packet : Packet)
@@ -104,12 +108,8 @@ module EngineIO
     end
 
     private def handle_message_packet(packet : Packet)
-      packet_data = packet.data
-      if packet_data.nil?
-        Log.debug { "Parse error. Invalid payload: #{packet_data}" }
-      else
-        @incoming.send(packet_data)
-      end
+      raise "Invalid payload" unless packet_data = packet.data
+      @incoming.send(packet_data)
     end
 
     private def send_packet(packet : Packet)

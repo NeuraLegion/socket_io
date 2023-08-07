@@ -1,3 +1,5 @@
+require "./packet"
+
 module SocketIO
   abstract class Decoder
     abstract def encode(packet : Packet) : String | Bytes
