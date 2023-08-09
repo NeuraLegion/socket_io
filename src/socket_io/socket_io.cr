@@ -139,7 +139,7 @@ module SocketIO
 
     private def on_packet
       @engine_io.on_packet do |data|
-        packet = @decoder.decode(data)
+        packet = @decoder.decode(data.dup)
         Log.debug { "Received #{packet.type} packet with namespace #{packet.nsp} and data #{packet.data}" }
         case packet.type
         when PacketType::EVENT, PacketType::ACK, PacketType::BINARY_EVENT, PacketType::BINARY_ACK
