@@ -63,7 +63,7 @@ module EngineIO
 
     private def run
       @websocket.on_binary do |message|
-        handle_packet(message)
+        handle_packet(message.dup)
       end
 
       @websocket.on_message do |message|
